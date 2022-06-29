@@ -1,0 +1,85 @@
+<html>
+
+<head>
+  <title>
+    Dan's Youtube Embedder
+  </title>
+</head>
+<body>
+  <h1>
+    Dan's Youtube Embedder
+  </h1>
+
+  <div id='input-url'>
+    <input id='submit' value='Generate' type='button'/>
+    <input id='user-input' type='url'/>
+    <input id='from-clip-submit' value='From Clipboard' type='button'/>
+  </div>
+
+  <div id='error-display'></div>
+  <div id='result-display'></div>
+
+  <script>
+    const inputURL = document.getElementById('input-url');
+    inputURL.style.display = 'flex';
+    inputURL.style.marginBottom = '0.5em';
+
+    const userInputField = document.getElementById('user-input');
+    userInputField.style.flex = '1';
+
+    const submitButton = document.getElementById('submit');
+    const submitFromClipButton = document.getElementById('from-clip-submit');
+
+    const errorDisplay = document.getElementById('error-display');
+    errorDisplay.style.display = 'none';
+    errorDisplay.style.backgroundColor = 'red';
+    errorDisplay.style.margin = '0.25em';
+    errorDisplay.style.padding = '0.25em';
+
+    const resultDisplay = document.getElementById('result-display');
+    resultDisplay.style.display = 'none';
+    resultDisplay.style.marginTop = '2em';
+    resultDisplay.style.padding = '0.5em';
+    resultDisplay.style.border = '1px solid black';
+    resultDisplay.style.wordWrap = 'break-word';
+
+    const raw = 
+    `<iframe
+      style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
+      src="https://www.youtube.com/embed/{REPLACE}&autoplay=1"
+      srcdoc="<style>*{padding:0;margin:0;overflow:hidden}html,body{height:100%}img,span{position:absolute;width:100%;top:0;bottom:0;margin:auto}span{height:1.5em;text-align:center;font:48px/1.5 sans-serif;color:white;text-shadow:0 0 0.5em black}</style><a href=https://www.youtube.com/embed/{REPLACE}?autoplay=1><img src=https://img.youtube.com/vi/{REPLACE}/hqdefault.jpg><span>▶</span></a>"
+      frameborder="0"
+      allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+      allowfullscreen
+    ></iframe>`;
+
+    const generate = () => {
+      errorDisplay.style.display = 'none';
+      try {
+        const url = new URL(userInputField.value);
+        const videoHash = url.searchParams.has('v') ? url.searchParams.get('v') : url.pathname.split('/').pop();
+        const result = raw.replaceAll('{REPLACE}', videoHash);
+
+        resultDisplay.innerText = result;
+        resultDisplay.style.display = 'block';
+
+        navigator.clipboard.writeText(result);
+      } catch (error) {
+        errorDisplay.style.display = 'block';
+        errorDisplay.innerText = error;
+      }
+    }
+
+    submitButton.addEventListener('click', (element) => {
+      generate();
+    });
+
+    submitFromClipButton.addEventListener('click', async (element) => {
+      const clipContent = await navigator.clipboard.readText();
+      userInputField.value = clipContent;
+      generate();
+    });
+
+  </script>
+</body>
+</html>
